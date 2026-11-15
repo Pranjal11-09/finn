@@ -1,0 +1,13 @@
+# Free scheduler: hits the deployed app so alerts fire even when nobody has it open.
+# Set repo secrets FINN_URL (e.g. https://finn.onrender.com) and CRON_TOKEN.
+name: finn-scan
+on:
+  schedule:
+    - cron: "*/30 3-13 * * 1-5"   # every 30 min, 08:30-19:00 IST, weekdays (filings)
+    - cron: "15 12 * * 1-5"       # 17:45 IST: after the 17:00 IST bar-finality buffer in prices.eod_stats
+  workflow_dispatch:
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS --max-time 170 "${{ secrets.FINN_URL }}/api/cron/scan?token=${{ secrets.CRON_TOKEN }}"

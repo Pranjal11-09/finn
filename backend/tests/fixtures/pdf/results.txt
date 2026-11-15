@@ -1,0 +1,8 @@
+SAMPLE LIMITEDStatement of Audited Consolidated Financial Results for the quarter ended 30-Sep-2026 (Rs in crore)
+Quarter ended 30.09.2026 30.06.2026 30.09.2025
+Revenue from operations 65,100 63,400 60,200
+Other income 900 1,100 850
+Finance costs 220 210 200
+Depreciation and amortisation expense 1,400 1,380 1,300
+Profit before tax 16,400 15,800 15,100
+Net profit for the period 12,300 11,900 11,350

@@ -1,0 +1,10 @@
+.env
+.env.*
+.git
+.venv
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+web/dist
+data/*.db*
+data/yfinance

@@ -1,0 +1,202 @@
+[
+ {
+  "id": "nse:fx0:TCS",
+  "symbol": "TCS",
+  "company": "Tata Consultancy Services",
+  "ts": "2026-11-15T10:25:41+05:30",
+  "headline": "Financial Result Updates",
+  "text": "SAMPLE: has informed the Exchange regarding Audited Standalone and Consolidated Financial Results for the quarter ended September 30, 2026",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_results_q2.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx1:DIXON",
+  "symbol": "DIXON",
+  "company": "Dixon Technologies",
+  "ts": "2026-11-15T08:25:41+05:30",
+  "headline": "Change in Directors/ Key Managerial Personnel/ Auditor/ Compliance Officer/ Share Transfer Agent",
+  "text": "SAMPLE: has informed the Exchange regarding appointment of Mr. Sample Arjun Mehta as Chief Financial Officer (CFO) and Key Managerial Personnel w.e.f. November 14, 2026",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_mgmt_cfo.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx2:KAYNES",
+  "symbol": "KAYNES",
+  "company": "Kaynes Technology",
+  "ts": "2026-11-15T06:25:41+05:30",
+  "headline": "Credit Rating",
+  "text": "SAMPLE: has informed the Exchange about Credit Rating - ICRA has revised outlook to Negative from Stable on long-term rating",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_rating.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx3:LT",
+  "symbol": "LT",
+  "company": "Larsen & Toubro",
+  "ts": "2026-11-15T04:25:41+05:30",
+  "headline": "Bagging/Receiving of orders/contracts",
+  "text": "SAMPLE: has informed the Exchange regarding receipt of order worth Rs 2,400 crore for a metro rail project",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_order.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx4:POLYCAB",
+  "symbol": "POLYCAB",
+  "company": "Polycab India",
+  "ts": "2026-11-15T02:25:41+05:30",
+  "headline": "Acquisition",
+  "text": "SAMPLE: has informed the Exchange about acquisition of 100% stake in a sample cable maker for Rs 310 crore",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_acq.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx5:HDFCBANK",
+  "symbol": "HDFCBANK",
+  "company": "HDFC Bank",
+  "ts": "2026-11-15T09:25:41+05:30",
+  "headline": "Copy of Newspaper Publication",
+  "text": "SAMPLE: has informed the Exchange about Copy of Newspaper Publication",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_news.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx6:RELIANCE",
+  "symbol": "RELIANCE",
+  "company": "Reliance Industries",
+  "ts": "2026-11-15T07:25:41+05:30",
+  "headline": "Trading Window-xbrl",
+  "text": "SAMPLE: has informed the Exchange regarding closure of trading window",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_tw.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx7:ITC",
+  "symbol": "ITC",
+  "company": "ITC",
+  "ts": "2026-11-15T05:25:41+05:30",
+  "headline": "Certificate under SEBI (Depositories and Participants) Regulations, 2018",
+  "text": "SAMPLE: compliance certificate under Reg 74(5)",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_c.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx8:SUNPHARMA",
+  "symbol": "SUNPHARMA",
+  "company": "Sun Pharmaceutical",
+  "ts": "2026-11-15T03:25:41+05:30",
+  "headline": "Analysts/Institutional Investor Meet/Con. Call Updates",
+  "text": "SAMPLE: has informed the Exchange about Schedule of meet with institutional investors",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_meet.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx9:TITAN",
+  "symbol": "TITAN",
+  "company": "Titan Company",
+  "ts": "2026-11-15T01:25:41+05:30",
+  "headline": "Analysts/Institutional Investor Meet/Con. Call Updates",
+  "text": "SAMPLE: has informed the Exchange about transcript of the earnings conference call for Q2 FY27",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_transcript.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx10:BAJFINANCE",
+  "symbol": "BAJFINANCE",
+  "company": "Bajaj Finance",
+  "ts": "2026-11-15T11:25:41+05:30",
+  "headline": "Outcome of Board Meeting",
+  "text": "SAMPLE: Board approved raising of funds via issue of non-convertible debentures on private placement basis up to Rs 5,000 crore",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_ncd.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx11:MARUTI",
+  "symbol": "MARUTI",
+  "company": "Maruti Suzuki",
+  "ts": "2026-11-15T00:25:41+05:30",
+  "headline": "Change in Directors/ Key Managerial Personnel/ Auditor/ Compliance Officer/ Share Transfer Agent",
+  "text": "SAMPLE: appointment of Secretarial Auditor for FY27",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_aud.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx12:BHARTIARTL",
+  "symbol": "BHARTIARTL",
+  "company": "Bharti Airtel",
+  "ts": "2026-11-14T23:25:41+05:30",
+  "headline": "Allotment of ESOP / ESPS",
+  "text": "SAMPLE: allotment of 12,400 equity shares under ESOP scheme",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_esop.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx13:TRENT",
+  "symbol": "TRENT",
+  "company": "Trent",
+  "ts": "2026-11-14T22:25:41+05:30",
+  "headline": "Board Meeting Intimation",
+  "text": "SAMPLE: board meeting to be held on November 20, 2026 to consider unaudited financial results for the quarter ended September 30, 2026",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_bmi.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx14:HAL",
+  "symbol": "HAL",
+  "company": "Hindustan Aeronautics",
+  "ts": "2026-11-15T12:25:41+05:30",
+  "headline": "Updates",
+  "text": "SAMPLE: has informed the Exchange regarding signing of contract valued at Rs 6,800 crore with the Ministry of Defence",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_hal.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx15:PERSISTENT",
+  "symbol": "PERSISTENT",
+  "company": "Persistent Systems",
+  "ts": "2026-11-14T21:25:41+05:30",
+  "headline": "Shareholders meeting",
+  "text": "SAMPLE: notice of Extra Ordinary General Meeting",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_egm.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx16:ETERNAL",
+  "symbol": "ETERNAL",
+  "company": "Eternal (Zomato)",
+  "ts": "2026-11-14T20:25:41+05:30",
+  "headline": "Outcome of Board Meeting",
+  "text": "SAMPLE: outcome of board meeting held today",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_out.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx17:CDSL",
+  "symbol": "CDSL",
+  "company": "Central Depository Svcs",
+  "ts": "2026-11-14T19:25:41+05:30",
+  "headline": "Dividend",
+  "text": "SAMPLE: Board declared interim dividend of Rs 12 per share; record date November 25, 2026",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_div.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx18:DIXON",
+  "symbol": "DIXON",
+  "company": "Dixon Technologies",
+  "ts": "2026-11-14T18:25:41+05:30",
+  "headline": "Disclosure under SEBI Takeover Regulations",
+  "text": "SAMPLE: disclosure by promoter group regarding sale of 0.8% equity shares in open market",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_sast.pdf",
+  "source": "NSE"
+ },
+ {
+  "id": "nse:fx19:SUNPHARMA",
+  "symbol": "SUNPHARMA",
+  "company": "Sun Pharmaceutical",
+  "ts": "2026-11-14T17:25:41+05:30",
+  "headline": "Press Release",
+  "text": "SAMPLE: USFDA warning letter issued to a sample manufacturing facility; company to respond within 15 days",
+  "url": "https://nsearchives.nseindia.com/corporate/SAMPLE_pr.pdf",
+  "source": "NSE"
+ }
+]

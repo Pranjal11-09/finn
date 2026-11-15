@@ -1,0 +1,136 @@
+{
+  "_note": "Mock portfolio: 18 NSE names across sectors and market-cap bands. Research engine is NOT limited to these.",
+  "portfolio": [
+    {
+      "symbol": "RELIANCE",
+      "name": "Reliance Industries",
+      "sector": "Conglomerate",
+      "band": "Large",
+      "bse": "500325"
+    },
+    {
+      "symbol": "HDFCBANK",
+      "name": "HDFC Bank",
+      "sector": "Private Bank",
+      "band": "Large",
+      "bse": "500180"
+    },
+    {
+      "symbol": "TCS",
+      "name": "Tata Consultancy Services",
+      "sector": "IT Services",
+      "band": "Large",
+      "bse": "532540"
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "name": "Bharti Airtel",
+      "sector": "Telecom",
+      "band": "Large",
+      "bse": "532454"
+    },
+    {
+      "symbol": "LT",
+      "name": "Larsen & Toubro",
+      "sector": "Capital Goods",
+      "band": "Large",
+      "bse": "500510"
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "name": "Sun Pharmaceutical",
+      "sector": "Pharma",
+      "band": "Large",
+      "bse": "524715"
+    },
+    {
+      "symbol": "MARUTI",
+      "name": "Maruti Suzuki",
+      "sector": "Auto",
+      "band": "Large",
+      "bse": "532500"
+    },
+    {
+      "symbol": "ITC",
+      "name": "ITC",
+      "sector": "FMCG",
+      "band": "Large",
+      "bse": "500875"
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "name": "Bajaj Finance",
+      "sector": "NBFC",
+      "band": "Large",
+      "bse": "500034"
+    },
+    {
+      "symbol": "TITAN",
+      "name": "Titan Company",
+      "sector": "Consumer Durables",
+      "band": "Large",
+      "bse": "500114"
+    },
+    {
+      "symbol": "TRENT",
+      "name": "Trent",
+      "sector": "Retail",
+      "band": "Large",
+      "bse": "500251"
+    },
+    {
+      "symbol": "ETERNAL",
+      "name": "Eternal (Zomato)",
+      "sector": "Internet",
+      "band": "Large",
+      "bse": "543320"
+    },
+    {
+      "symbol": "HAL",
+      "name": "Hindustan Aeronautics",
+      "sector": "Defence",
+      "band": "Large",
+      "bse": "541154"
+    },
+    {
+      "symbol": "DIXON",
+      "name": "Dixon Technologies",
+      "sector": "EMS",
+      "band": "Mid",
+      "bse": "540699"
+    },
+    {
+      "symbol": "POLYCAB",
+      "name": "Polycab India",
+      "sector": "Cables & Wires",
+      "band": "Mid",
+      "bse": "542652"
+    },
+    {
+      "symbol": "PERSISTENT",
+      "name": "Persistent Systems",
+      "sector": "IT Services",
+      "band": "Mid",
+      "bse": "533179"
+    },
+    {
+      "symbol": "CDSL",
+      "name": "Central Depository Svcs",
+      "sector": "Capital Markets",
+      "band": "Mid"
+    },
+    {
+      "symbol": "KAYNES",
+      "name": "Kaynes Technology",
+      "sector": "EMS",
+      "band": "Small",
+      "bse": "543664"
+    }
+  ],
+  "research_demo": [
+    "ASIANPAINT",
+    "INDIGO",
+    "TATAPOWER",
+    "CAMS"
+  ]
+}

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: finn
+    runtime: docker
+    plan: free
+    region: singapore   # closest Render region to NSE/BSE; US datacentre IPs are often refused
+    healthCheckPath: /api/health
+    envVars:
+      - key: FINN_ISOLATE_REVIEWERS
+        value: "1"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: CRON_TOKEN
+        generateValue: true
