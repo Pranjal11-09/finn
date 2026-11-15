@@ -80,6 +80,7 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
   const [meta, setMeta] = useState<any>(null)
   const [sec, setSec] = useState<Sections>({})
   const [docs, setDocs] = useState<Doc[]>([])
+  const [coverage, setCoverage] = useState<{sid: string; pages_loaded: number}[]>([])
   const [guid, setGuid] = useState<any[]>([])
   const [status, setStatus] = useState<{ stage: string; text: string } | null>(null)
   const [err, setErr] = useState('')
@@ -87,6 +88,7 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
   const [qa, setQa] = useState<{ q: string; a?: string; cites?: any[] }[]>([])
   const [listening, setListening] = useState(false)
   const es = useRef<EventSource | null>(null)
+  const streamTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const pendingQ = useRef<string | undefined>(undefined)
 
   useEffect(() => { api.portfolio().then((p) => setDemo(p.research_demo)).catch(() => {}) }, [])
@@ -98,17 +100,24 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
     const t = setTimeout(() => api.search(input).then(setSugg).catch(() => {}), 250)
     return () => clearTimeout(t)
   }, [input])
-  useEffect(() => () => es.current?.close(), [])
+  useEffect(() => () => { es.current?.close(); clearTimeout(streamTimer.current) }, [])
 
   function open(s: string, live = false) {
     s = s.trim().toUpperCase()
     if (!s) return
     es.current?.close()
-    setCapturedAt(null)
+    clearTimeout(streamTimer.current)
+    setCapturedAt(null); setCoverage([])
     setSym(s); setInput(s); setSugg([]); setMeta(null); setSec({}); setDocs([]); setGuid([]); setErr(''); setQa([])
     setStatus({ stage: 'start', text: `Opening ${s}` })
     const src = new EventSource(`/api/research/${encodeURIComponent(s)}/stream${live ? '?live=true' : ''}`)
     es.current = src
+    let completed = false
+    const fail = (message: string) => {
+      if (es.current !== src || completed) return
+      src.close(); clearTimeout(streamTimer.current); setStatus(null); setErr(message)
+    }
+    streamTimer.current = setTimeout(() => fail('Research timed out. Any sections already loaded remain below. Retry to continue.'), 120000)
     let usingSnapshot = false
     src.onmessage = (m) => {
       const ev = JSON.parse(m.data)
@@ -116,16 +125,17 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
       else if (ev.type === 'meta') setMeta(ev)
       else if (ev.type === 'section') setSec((p) => ({ ...p, [ev.key]: ev.data }))
       else if (ev.type === 'sources') setDocs(ev.docs)
+      else if (ev.type === 'coverage') setCoverage(ev.documents)
       else if (ev.type === 'guidance') setGuid((g) => [...g, ev.data])
       else if (ev.type === 'status') {
         setStatus(ev)
         if (ev.stage === 'done') {
-          src.close()
+          completed = true; clearTimeout(streamTimer.current); src.close()
           if (pendingQ.current) { const pq = pendingQ.current; pendingQ.current = undefined; ask(pq, s, usingSnapshot) }
         }
-      } else if (ev.type === 'error') { setErr(ev.text); setStatus(null); src.close() }
+      } else if (ev.type === 'error') { fail(ev.text) }
     }
-    src.onerror = () => { src.close(); setStatus((st) => (st?.stage === 'done' ? st : null)) }
+    src.onerror = () => fail('The research connection ended before completion. Loaded sections remain available. Retry when connected.')
   }
 
   async function ask(question: string, s = sym, saved = capturedAt !== null) {
@@ -165,7 +175,7 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
         <p className="prose">Built from the company's own annual report and earnings-call transcripts. No news, no broker notes. Document references link to source pages. Model interpretations require verification.</p>
         <div className="chips">{demo.map((d) => <button key={d} className="chip" onClick={() => open(d)}>{d}</button>)}</div>
       </>}
-      {err && <p className="err">{err}</p>}
+      {err && <div role="alert" className="banner"><p className="err">{err}</p><button className="btn" onClick={() => open(sym)}>Retry research</button></div>}
 
       {capturedAt && <div className="banner">
         Source-backed snapshot · {new Date(capturedAt * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
@@ -311,10 +321,12 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
       </section>}
 
       {docs.length > 0 && <section className="panel" id="read">
-        <h3>What I read</h3>
+        <h3>Source documents</h3>
+        <p className="src">Analysis uses selected excerpts, not every page. Page links let you check the original context; a valid citation alone does not prove an interpretation.</p>
         <ul className="sources">
           {docs.map((d) => { const g = guid.find((x) => x.sid === d.sid); return (
             <li key={d.sid}><span className="cite">{d.sid}</span> <a href={d.url} target="_blank" rel="noreferrer">{d.title}</a>
+              {coverage.find(c => c.sid === d.sid)?.pages_loaded === 0 && <span className="err"> — could not read; excluded from analysis</span>}
               {g?.pages_read && <span className="prose">, {g.pages_read} of {g.pages_total} pages sent to the model</span>}</li>) })}
           <li><span className="cite">numbers</span> <a href={meta?.url} target="_blank" rel="noreferrer">Filed financials via screener.in</a></li>
         </ul>

@@ -40,7 +40,7 @@ async def isolate_reviewer(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "llm": llm.available(), "fixtures": config.FIXTURES, "fast_feeds": config.FAST_FEEDS,
+    return {"ok": True, "release": "evidence-mobile-v2", "llm": llm.available(), "fixtures": config.FIXTURES, "fast_feeds": config.FAST_FEEDS,
             "telegram": bool(config.TELEGRAM_BOT_TOKEN and config.TELEGRAM_CHAT_ID)}
 
 

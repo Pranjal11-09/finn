@@ -67,5 +67,4 @@ async def answer(symbol: str, question: str, *, saved: bool = False) -> dict:
                     "cites": [{k: best[k] for k in ("sid", "page", "title")}]}
         return {"answer": "The model was unavailable. Try again or open the source documents.", "cites": []}
     out = validate_answer(out, hits)
-    out["cites"] = [{"sid": h["sid"], "page": h["page"], "title": h["title"]} for h in hits]
     return out

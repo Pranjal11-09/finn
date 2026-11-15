@@ -18,7 +18,7 @@ from ..sources import screener
 from . import docs as D
 from . import metrics as M
 from . import promises as P
-from .evidence import validate_synthesis
+from .evidence import validate_synthesis, validate_guidance
 
 GUIDANCE_SYS = ("You extract forward-looking statements from Indian earnings-call transcripts. Quote management "
                 "verbatim. Never infer numbers that are not said. Ignore analysts' own estimates.")
@@ -102,6 +102,7 @@ async def _guidance(doc: dict, pages: list[str]) -> dict:
                              system=GUIDANCE_SYS, tier="cheap", version="v2", max_tokens=3000)
     except llm.LLMUnavailable as e:
         return {"sid": doc["sid"], "error": str(e)}
+    out = validate_guidance(out, pages)
     out["sid"], out["title"], out["pages_read"], out["pages_total"] = doc["sid"], doc["title"], len(used), len(pages)
     return out
 
@@ -162,6 +163,7 @@ async def stream(symbol: str, *, live: bool = False) -> AsyncIterator[str]:
     yield _ev("status", stage="reading", text=f"Reading {len(docs)} primary documents")
     pages = await asyncio.gather(*(D.load(d) for d in docs))
     by_sid = {d["sid"]: p for d, p in zip(docs, pages)}
+    yield _ev("coverage", documents=[{"sid": d["sid"], "title": d["title"], "pages_loaded": len(by_sid[d["sid"]])} for d in docs])
     # build retrieval chunks for follow-up Q&A
     all_chunks = [c for d in docs for c in D.chunks(d, by_sid[d["sid"]])]
     db.kv_set("chunks", symbol, {"docs": docs, "chunks": all_chunks})

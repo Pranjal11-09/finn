@@ -29,3 +29,46 @@ def test_model_verdicts_are_discarded_and_bad_cites_dropped():
 def test_unknown_qa_page_rejected():
     out = validate_answer({"answer":"Revenue grew [S1 p.99]"}, [{"sid":"S1","page":1}])
     assert "could not validate" in out["answer"]
+
+
+def test_synthesis_drops_uncited_and_invented_sources():
+    out = validate_synthesis({"bull": ["No source", "Growth [S1 p.9]", "Cash [N:annual]", "Demand [S1 p.1]"],
+                              "bear": ["Bad [N:invented]", "Mixed [S1 p.1] [S2 p.1]"]}, {"S1": ["text"]})
+    assert out["bull"] == ["Cash [N:annual]", "Demand [S1 p.1]"]
+    assert out["bear"] == []
+
+
+def test_answer_returns_only_used_sources():
+    hits = [{"sid": "S1", "page": 1, "title": "Call"}, {"sid": "S2", "page": 3, "title": "Report"}]
+    out = validate_answer({"answer": "Revenue grew [S1 p.1]"}, hits)
+    assert out["cites"] == hits[:1]
+    assert validate_answer({"answer": "Invented [S3 p.1]"}, hits)["cites"] == []
+
+
+def test_results_reject_bad_unit_page_and_hallucinated_number():
+    from copy import deepcopy
+    import pytest
+    from app.push.enrich import validate_extraction
+    valid = {"unit": "lakh", "basis": "consolidated", "page": 1,
+             "periods": {"current": "Sep 2026", "previous": "Jun 2026", "year_ago": "Sep 2025"},
+             "revenue": ["9,525.15", "8,000", "7,000"]}
+    pages = ["Revenue from operations 9,525.15 8,000 7,000"]
+    assert validate_extraction(deepcopy(valid), pages, [0])["revenue"][0] == 9525.15
+    for patch in ({"unit": "rupees"}, {"page": 2}, {"page": True}, {"basis": "unknown"},
+                  {"periods": {}}, {"revenue": [999999, 8000, 7000]}):
+        with pytest.raises(ValueError):
+            validate_extraction({**deepcopy(valid), **patch}, pages, [0])
+
+
+def test_nonfinite_numbers_are_missing():
+    from app.push.enrich import _n
+    assert _n("nan") is None and _n(float("inf")) is None
+
+
+def test_guidance_rejects_invented_quotes_and_wrong_pages():
+    from app.pull.evidence import validate_guidance
+    rows = [{"quote": "We expect 12–14% growth", "page": 1},
+            {"quote": "We expect 99% growth", "page": 1},
+            {"quote": "We expect 12–14% growth", "page": 2}]
+    out = validate_guidance({"guidance": rows}, ["CFO: We expect 12-14% growth."])
+    assert out["guidance"] == rows[:1]

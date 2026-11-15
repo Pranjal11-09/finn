@@ -15,7 +15,7 @@ const ICONS: Record<Tab, ReactElement> = {
 const LABEL: Record<Tab, string> = { brief: 'Brief', alerts: 'Alerts', research: 'Research', setup: 'Setup' }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>(() => (location.hash.slice(1) as Tab) || 'brief')
+  const [tab, setTab] = useState<Tab>(() => { const hash = location.hash.slice(1); return hash in LABEL ? hash as Tab : 'brief' })
   const [jump, setJump] = useState<{ symbol: string; q?: string } | null>(null)
   const [count, setCount] = useState(0)
 

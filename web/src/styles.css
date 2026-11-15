@@ -246,3 +246,25 @@ nav.tabs .dot { position: absolute; top: 9px; left: calc(50% + 7px); min-width: 
 .drawer ul.untestable li b { color: var(--ink); }
 #promises .score { align-items: flex-start; }
 #promises .tally { margin-top: 4px; }
+
+/* Phone input, evidence tables and keyboard accessibility. */
+.search input, .ask input, .score > div, .kpi, .series > div { min-width: 0; }
+.ask input { font-size: 16px; }
+.app:has(.ask) { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-inset-bottom)); }
+.panel, .answer, .person, .sources { overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; }
+.table-scroll table { min-width: 360px; }
+button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--stamp); outline-offset: 3px; }
+@media (max-width: 600px) {
+  .acts { flex-wrap: wrap; }
+  .acts button, .acts a, .btn, .chip, .window-pick button, .jump a, .ask button, summary { min-height: 44px; }
+  .jump a { display: flex; align-items: center; }
+  .promise { padding-right: 0; padding-top: 42px; }
+  .vstamp { top: 10px; transform: none; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+.score .cred { flex: 0 0 88px; overflow-wrap: normal; }
+@media (max-width: 380px) { .score { flex-direction: column; align-items: flex-start; } .score .cred { flex-basis: auto; } }

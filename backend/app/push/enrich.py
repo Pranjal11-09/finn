@@ -8,6 +8,7 @@ everything 'act'   -> one-line "so what" from the first pages of the filing.
 from __future__ import annotations
 
 import re
+import math
 from urllib.parse import quote_plus
 
 import httpx
@@ -45,7 +46,7 @@ def _n(v):
     if v is None or isinstance(v, bool):
         return None
     if isinstance(v, (int, float)):
-        return float(v)
+        return float(v) if math.isfinite(v) else None
     t = str(v).strip().replace(",", "").replace("₹", "").replace(" ", "")
     neg = t.startswith("(") and t.endswith(")")
     t = t.strip("()")
@@ -55,7 +56,7 @@ def _n(v):
         x = float(t)
     except ValueError:
         return None
-    return -x if neg else x
+    return (-x if neg else x) if math.isfinite(x) else None
 
 
 def _clean_lines(x: dict) -> dict:
@@ -116,6 +117,11 @@ _MON = {m: m[:3].title() for m in ("january february march april may june july a
 def _norm_period(p) -> str | None:
     """'30th September 2026' / 'Q2 FY27 (Sep-26)' / 'Sep 2026' -> 'Sep 2026'."""
     t = str(p or "").lower()
+    fiscal = re.search(r"\bq([1-4])\s*fy\s*(\d{2}|20\d{2})\b", t)
+    if fiscal:
+        q, y = int(fiscal[1]), int(fiscal[2])
+        y = y + 2000 if y < 100 else y
+        return f"{['Jun', 'Sep', 'Dec', 'Mar'][q - 1]} {y if q == 4 else y - 1}"
     mon = next((v for k, v in _MON.items() if k in t or re.search(rf"\b{k[:3]}\b", t)), None)
     yr = re.search(r"(20\d{2})", t) or re.search(r"[-' ](\d{2})\b", t)
     if not mon or not yr:
@@ -152,8 +158,25 @@ def screener_card(sc: dict) -> dict | None:
     return card
 
 
+def validate_extraction(x: dict, pages: list[str], selected: list[int]) -> dict:
+    """Reject unsupported metadata/numbers; presence is not proof of the right row or column."""
+    unit = str(x.get("unit", "")).lower().strip()
+    page = x.get("page")
+    if unit not in UNIT_TO_CR or x.get("basis") not in ("consolidated", "standalone"):
+        raise ValueError("Unknown unit or reporting basis")
+    if type(page) is not int or page - 1 not in selected or not _norm_periods(x.get("periods")):
+        raise ValueError("Missing period labels or source page")
+    printed = {_n(v) for v in re.findall(r"(?<![\w.])\(?-?\d[\d,]*(?:\.\d+)?\)?", pages[page - 1])}
+    x = _clean_lines(x)
+    for key in ("revenue", "other_income", "finance_costs", "depreciation", "exceptional", "pbt", "pat"):
+        for value in x[key]:
+            if value is not None and not (key == "exceptional" and value == 0) and value not in printed:
+                raise ValueError("Extracted number is absent from the cited page")
+    return x
+
+
 async def results_card(item: dict) -> dict:
-    key = "validated-v3:" + item["id"]
+    key = "validated-v4:" + item["id"]
     hit = db.kv_get("card_results", key)
     if hit:
         return hit[0]
@@ -175,14 +198,17 @@ async def results_card(item: dict) -> dict:
             try:
                 x = await llm.call("results_extract", RESULTS_PROMPT.format(text=text), system=RESULTS_SYS,
                                    tier="cheap", version="v3")
-                mult = UNIT_TO_CR.get(str(x.get("unit", "crore")).lower().strip(), 1.0)
-                x = _clean_lines(x)
+                x = validate_extraction(x, pgs, idx)
+                mult = UNIT_TO_CR[str(x["unit"]).lower().strip()]
                 if lender is not None:
                     x["is_financial"] = lender
                 x["ebitda"] = _ebitda(x)
                 card = _card_from_lines(x, mult, "results filing")
                 card.update({"periods": x.get("periods"), "basis": x.get("basis"), "unit": "₹ Cr",
-                             "page": x.get("page"), "is_financial": x.get("is_financial")})
+                             "page": x.get("page"), "is_financial": x.get("is_financial"),
+                             "source_url": item.get("url"),
+                             "verification": "Extracted values occur on the cited page; row and column interpretation still requires review.",
+                             "calculation": "EBITDA = PBT + finance costs + depreciation - other income - exceptional items. QoQ and YoY use the labeled comparison quarters."})
                 if x.get("is_financial"):
                     card["note"] = "Lender: EBITDA is not meaningful; read revenue as total income."
             except (llm.LLMUnavailable, AttributeError, TypeError, ValueError):
@@ -190,7 +216,7 @@ async def results_card(item: dict) -> dict:
     # cross-check against screener (or fall back to it)
     sc_card = screener_card(sc) if sc else None
     if card and sc_card:
-        same_period = _norm_periods(card.get("periods")) == _norm_periods(sc_card.get("periods"))
+        same_period = bool(_norm_periods(card.get("periods"))) and _norm_periods(card.get("periods")) == _norm_periods(sc_card.get("periods"))
         same_basis = card.get("basis") == sc_card.get("basis")
         if same_period and same_basis:
             a, b = card["metrics"][0]["cur"], sc_card["metrics"][0]["cur"]

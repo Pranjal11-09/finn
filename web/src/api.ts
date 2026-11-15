@@ -20,7 +20,7 @@ export interface Metric { key: string; label: string; cur: number | null; prev: 
   qoq: number | null; yoy: number | null; margin?: number | null; margin_yago?: number | null }
 
 export interface ResultsCard { metrics: Metric[]; source: string; periods?: Record<string, string>; basis?: string
-  unit?: string; page?: number; verdict?: string; check?: { ok: boolean; vs: string; diff_pct: number }; note?: string; error?: string }
+  unit?: string; page?: number; source_url?: string; verification?: string; calculation?: string; verdict?: string; check?: { ok: boolean; vs: string; diff_pct: number }; note?: string; error?: string }
 
 export interface MgmtChange { person: string; role: string; action: string; effective?: string; reason?: string
   profile?: string; prior_roles?: string[]; linkedin?: string; web?: { bio: string; urls: string[] } }

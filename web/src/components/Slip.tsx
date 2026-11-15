@@ -21,6 +21,16 @@ export function ResultsTable({ r }: { r: ResultsCard }) {
           ))}
         </tbody>
       </table>
+      <details className="drawer">
+        <summary>Compare quarters &amp; check evidence</summary>
+        <div className="table-scroll"><table className="res">
+          <thead><tr><th>₹ Cr</th><th>{p.current}</th><th>{p.previous}</th><th>{p.year_ago}</th></tr></thead>
+          <tbody>{r.metrics.map(m => <tr key={m.key}><td>{m.label}</td><td>{fmtCr(m.cur)}</td><td>{fmtCr(m.prev)}</td><td>{fmtCr(m.yago)}</td></tr>)}</tbody>
+        </table></div>
+        {r.source_url && <a href={`${r.source_url}#page=${r.page || 1}`} target="_blank" rel="noreferrer">Open source page {r.page}</a>}
+        <p className="src">{r.verification || 'Model extraction; check the original filing.'}</p>
+        {r.calculation && <p className="src">{r.calculation}</p>}
+      </details>
       {r.verdict && <p className="verdict">{r.verdict}</p>}
       <p className="src">
         {r.basis && `${r.basis[0].toUpperCase()}${r.basis.slice(1)}, `}from {r.source}{r.page ? `, p.${r.page}` : ''}
@@ -63,9 +73,10 @@ export function Slip({ item, onTriage, onAsk }: { item: Item; onTriage: (id: str
     return () => { live = false }
   }, [item.id])
 
-  const act = (s: string) => {
+  const act = async (s: string) => {
+    try { await api.triage(item.id, s) }
+    catch { setErr('Your action could not be saved. Please retry.'); return }
     setStamp(s)
-    api.triage(item.id, s).catch(() => {})
     if (s !== 'keep') {
       if (ref.current) ref.current.style.maxHeight = `${ref.current.offsetHeight}px`
       setTimeout(() => setFiled(true), 520)
@@ -92,7 +103,7 @@ export function Slip({ item, onTriage, onAsk }: { item: Item; onTriage: (id: str
       <span className="kind">{CAT[item.category] || item.category}</span>
       {!enr && <p className="headline">{item.text || item.headline}</p>}
       {!enr && !err && <><div className="skeleton" style={{ width: '92%' }} /><div className="skeleton" style={{ width: '64%' }} /></>}
-      {err && <p className="err">Couldn't read the filing: {err}</p>}
+      {err && <p role="alert" className="err">{err}</p>}
       {enr?.results && <ResultsTable r={enr.results} />}
       {enr?.mgmt && (enr.mgmt.changes.length ? enr.mgmt.changes.map((c, i) => <Person key={i} c={c} />) : <p className="headline">{item.text || item.headline}</p>)}
       {enr?.line && <p className="verdict">{enr.line}</p>}

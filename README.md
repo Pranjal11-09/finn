@@ -65,3 +65,9 @@ The hosted demo serves dated cached filings and prices while external feeds refr
 Hosting availability and plan terms may vary. The bundled Dockerfile builds and serves the frontend and API together.
 
 See SUBMISSION.md for the final review sequence and WRITEUP.md for the covering email.
+
+### Verify a deployment
+
+Run `python3 scripts/smoke.py https://finn-1ffu.onrender.com` after deployment. This checks the release marker, frontend, portfolio, 24h/72h digest, a results card with source metadata when present, and the Asian Paints research ledger. It does not certify live exchange availability or a physical phone.
+
+Results evidence now includes comparison-quarter values, a PDF page link, and the EBITDA formula. Unknown units, missing periods/pages, and extracted values absent from the attributed page are rejected. Number presence is a guard against fabrication, not proof of correct row/column interpretation. Live guidance extraction also checks quoted text against its attributed page. Source coverage identifies unreadable documents.
