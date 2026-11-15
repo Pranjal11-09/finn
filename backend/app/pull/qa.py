@@ -6,7 +6,7 @@ import asyncio
 import math
 from collections import Counter
 
-from .. import db, llm
+from .. import config, db, llm
 from ..sources import screener
 from . import docs as D
 from . import metrics as M
@@ -39,23 +39,33 @@ def bm25(query: str, chunks: list[dict], k: int = 6) -> list[dict]:
     return [chunks[i] for s, i in scored[:k] if s > 0]
 
 
-async def answer(symbol: str, question: str) -> dict:
+async def answer(symbol: str, question: str, *, saved: bool = False) -> dict:
     symbol = symbol.upper()
-    store = db.kv_get_stale("chunks", symbol)
-    if not store:
+    store = (db.kv_get("demo_dossier_v1", symbol) if saved and config.FAST_FEEDS
+             else db.kv_get_stale("chunks", symbol))
+    if not store or not store[0]["chunks"]:
         return {"answer": "Open the research view for this company first so I can read its documents.", "cites": []}
     hits = bm25(question, store[0]["chunks"])
-    sc = await screener.company(symbol)
-    numbers = M.actuals_table(sc) if sc else ""
+    if not hits:
+        return {"answer": "No matching passage was found in the available document excerpts.", "cites": []}
+    numbers = ""
+    if not saved:
+        try:
+            sc = await asyncio.wait_for(screener.company(symbol), timeout=5)
+        except TimeoutError:
+            sc = None
+        numbers = M.actuals_table(sc) if sc else ""
     ctx = "\n\n".join(f"[{h['sid']} p.{h['page']}] ({h['title']})\n{h['text']}" for h in hits)
     try:
         out = await asyncio.wait_for(llm.call("qa", f"QUESTION: {question}\n\nNUMBERS:\n{numbers}\n\nEXCERPTS:\n{ctx}\n\n"
                                    'Return JSON {"answer": "...", "confidence": "high|medium|low"}',
-                             system=QA_SYS, tier="cheap", version="v3", max_tokens=800), timeout=45)
-    except asyncio.TimeoutError:
-        return {"answer": "The model took too long. Please retry or narrow your question.", "cites": []}
-    except llm.LLMUnavailable as e:
-        return {"answer": f"Model unavailable: {e}", "cites": []}
+                             system=QA_SYS, tier="cheap", version="v3", max_tokens=800), timeout=15 if config.FAST_FEEDS else 45)
+    except (TimeoutError, llm.LLMUnavailable):
+        best = hits[0]
+        if saved:
+            return {"answer": f"Relevant source excerpt: {best['text']} [{best['sid']} p.{best['page']}]",
+                    "cites": [{k: best[k] for k in ("sid", "page", "title")}]}
+        return {"answer": "The model was unavailable. Try again or open the source documents.", "cites": []}
     out = validate_answer(out, hits)
     out["cites"] = [{"sid": h["sid"], "page": h["page"], "title": h["title"]} for h in hits]
     return out

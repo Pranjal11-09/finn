@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import re
 import secrets
@@ -39,7 +40,7 @@ async def isolate_reviewer(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "llm": llm.available(), "fixtures": config.FIXTURES,
+    return {"ok": True, "llm": llm.available(), "fixtures": config.FIXTURES, "fast_feeds": config.FAST_FEEDS,
             "telegram": bool(config.TELEGRAM_BOT_TOKEN and config.TELEGRAM_CHAT_ID)}
 
 
@@ -60,7 +61,11 @@ async def item_enrich(id: str):
     hit = db.kv_get_stale("item", id)
     if not hit:
         raise HTTPException(404, "unknown item — reload the digest")
-    return await enrich.enrich(hit[0])
+    try:
+        return await asyncio.wait_for(enrich.enrich(hit[0]), timeout=12)
+    except TimeoutError:
+        return {"id": id, "line": hit[0].get("text") or hit[0].get("headline"),
+                "error": "Filing enrichment took too long. Open the original filing to see the source."}
 
 
 @app.post("/api/triage")
@@ -98,9 +103,9 @@ def post_settings(patch: dict = Body(...)):
 
 
 @app.get("/api/research/{symbol}/stream")
-async def research_stream(symbol: str):
+async def research_stream(symbol: str, live: bool = False):
     async def gen():
-        async for ev in dossier.stream(symbol):
+        async for ev in dossier.stream(symbol, live=live):
             yield f"data: {ev}\n\n"
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -111,7 +116,7 @@ async def research_ask(symbol: str, body: dict = Body(...)):
     q = (body.get("q") or "").strip()
     if not q:
         raise HTTPException(400, "empty question")
-    return await qa.answer(symbol, q)
+    return await qa.answer(symbol, q, saved=body.get("saved") is True)
 
 
 @app.get("/api/search")

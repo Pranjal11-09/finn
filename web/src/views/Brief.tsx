@@ -40,7 +40,7 @@ export function Brief({ onAsk, onCount }: { onAsk: (s: string, q?: string) => vo
     speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(parts.join('. ')), { lang: 'en-IN', rate: 1.05 }))
   }
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })
-  const failed = d ? Object.values(d.feed_status).filter((s) => s === 'error' || s === 'stale').length : 0
+  const failed = d ? Object.values(d.feed_status).filter((s) => s === 'error' || s === 'stale' || s === 'refreshing').length : 0
 
   return (
     <>
@@ -53,13 +53,13 @@ export function Brief({ onAsk, onCount }: { onAsk: (s: string, q?: string) => vo
       {err && <p className="err">Couldn't load the brief: {err}</p>}
       {!d && !err && <><div className="skeleton" style={{ height: 30, width: '90%' }} /><div className="skeleton" style={{ height: 30, width: '70%' }} /></>}
       {d && <>
-        <Lede text={!act.length && !d.movers.length ? `Nothing needs you right now.` : gone.size === 0 ? d.headline : `${act.length + d.movers.length} things need you: ${act.length} filings, ${d.movers.length} unusual moves.`} />
+        <Lede text={!act.length && !d.movers.length ? (failed ? `No urgent items in the available data.` : `Nothing needs you right now.`) : gone.size === 0 ? d.headline : `${act.length + d.movers.length} things need you: ${act.length} filings, ${d.movers.length} unusual moves.`} />
         <p className="sub">
           {d.items.length} filings across {d.tape.length} holdings in the last {hours >= 48 ? `${hours / 24} days` : `${hours} hours`}.{' '}
           {'speechSynthesis' in window && <button className="btn" style={{ padding: '2px 8px', fontSize: 12.5 }} onClick={listen}>Listen</button>}
         </p>
         {d.fixtures && <p className="banner">Synthetic test data. Live feeds are off in this build.</p>}
-        {failed > 0 && <p className="banner">{failed} exchange feeds didn't answer; coverage may be incomplete. Cached filings remain limited to the selected dates.</p>}
+        {failed > 0 && <p className="banner">{failed} exchange feeds are refreshing or unavailable. Saved filings are filtered to the selected window.</p>}
 
         <div className="tape" aria-label="Portfolio today">
           {d.tape.map((t) => (
@@ -72,7 +72,7 @@ export function Brief({ onAsk, onCount }: { onAsk: (s: string, q?: string) => vo
         </div>
 
         <div className="sec-h"><h2>Needs you</h2><span>{act.length ? 'Swipe right when done' : ''}</span></div>
-        {act.length === 0 && <div className="empty"><h3>You're clear.</h3><p>Nothing material in this window. Try a longer one, or check Alerts for price moves.</p></div>}
+        {act.length === 0 && <div className="empty"><h3>{failed ? 'No urgent filings in the available data.' : 'You’re clear.'}</h3><p>Try a longer window, or check Alerts for price moves.</p></div>}
         {act.map((i) => <Slip key={i.id} item={i} onTriage={dismiss} onAsk={onAsk} />)}
 
         {know.length > 0 && <>

@@ -20,6 +20,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = Path(os.getenv("FINN_DB", DATA_DIR / "finn.db"))
 SEED_PATH = DATA_DIR / "seed.jsonl.gz"          # pre-warmed cache shipped with the repo (see scripts/snapshot.py)
 WEB_DIST = ROOT / "web" / "dist"
+FAST_FEEDS = os.getenv("FINN_FAST_FEEDS", "") == "1"
 ISOLATE_REVIEWERS = os.getenv("FINN_ISOLATE_REVIEWERS", "") == "1"
 
 # --- LLM routing -------------------------------------------------------------

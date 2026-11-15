@@ -76,6 +76,7 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
   const [sym, setSym] = useState('')
   const [demo, setDemo] = useState<string[]>([])
   const [sugg, setSugg] = useState<{ symbol: string; name: string }[]>([])
+  const [capturedAt, setCapturedAt] = useState<number | null>(null)
   const [meta, setMeta] = useState<any>(null)
   const [sec, setSec] = useState<Sections>({})
   const [docs, setDocs] = useState<Doc[]>([])
@@ -99,17 +100,20 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
   }, [input])
   useEffect(() => () => es.current?.close(), [])
 
-  function open(s: string) {
+  function open(s: string, live = false) {
     s = s.trim().toUpperCase()
     if (!s) return
     es.current?.close()
+    setCapturedAt(null)
     setSym(s); setInput(s); setSugg([]); setMeta(null); setSec({}); setDocs([]); setGuid([]); setErr(''); setQa([])
     setStatus({ stage: 'start', text: `Opening ${s}` })
-    const src = new EventSource(`/api/research/${encodeURIComponent(s)}/stream`)
+    const src = new EventSource(`/api/research/${encodeURIComponent(s)}/stream${live ? '?live=true' : ''}`)
     es.current = src
+    let usingSnapshot = false
     src.onmessage = (m) => {
       const ev = JSON.parse(m.data)
-      if (ev.type === 'meta') setMeta(ev)
+      if (ev.type === 'snapshot') { usingSnapshot = true; setCapturedAt(ev.captured_at) }
+      else if (ev.type === 'meta') setMeta(ev)
       else if (ev.type === 'section') setSec((p) => ({ ...p, [ev.key]: ev.data }))
       else if (ev.type === 'sources') setDocs(ev.docs)
       else if (ev.type === 'guidance') setGuid((g) => [...g, ev.data])
@@ -117,18 +121,18 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
         setStatus(ev)
         if (ev.stage === 'done') {
           src.close()
-          if (pendingQ.current) { const pq = pendingQ.current; pendingQ.current = undefined; ask(pq, s) }
+          if (pendingQ.current) { const pq = pendingQ.current; pendingQ.current = undefined; ask(pq, s, usingSnapshot) }
         }
       } else if (ev.type === 'error') { setErr(ev.text); setStatus(null); src.close() }
     }
     src.onerror = () => { src.close(); setStatus((st) => (st?.stage === 'done' ? st : null)) }
   }
 
-  async function ask(question: string, s = sym) {
+  async function ask(question: string, s = sym, saved = capturedAt !== null) {
     if (!question.trim() || !s) return
     setQa((x) => [{ q: question }, ...x]); setQ('')
     try {
-      const r = await api.ask(s, question)
+      const r = await api.ask(s, question, saved)
       setQa((x) => x.map((y) => (y.q === question && !y.a ? { ...y, a: r.answer, cites: r.cites } : y)))
     } catch (e) {
       setQa((x) => x.map((y) => (y.q === question && !y.a ? { ...y, a: `Couldn't answer: ${(e as Error).message}` } : y)))
@@ -163,6 +167,10 @@ export function Research({ initial, onConsumed }: { initial: { symbol: string; q
       </>}
       {err && <p className="err">{err}</p>}
 
+      {capturedAt && <div className="banner">
+        Source-backed snapshot · {new Date(capturedAt * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}
+        {' '}<button className="btn" onClick={() => open(sym, true)}>Refresh live</button>
+      </div>}
       {meta && <div className="dossier-head">
         <h1>{meta.name}</h1>
         <p>{meta.symbol}, {meta.basis || 'consolidated'} figures{snap?.kpis?.find((k: any) => k.label === 'Market Cap') && `, market cap ₹${fmtCr(snap.kpis.find((k: any) => k.label === 'Market Cap').value)} Cr`}</p>

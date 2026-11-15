@@ -32,7 +32,7 @@ def select_docs(sc: dict, n_calls: int = 4) -> list[dict]:
 async def load(doc: dict) -> list[str]:
     cap = 40 if doc["kind"] == "transcript" else 160
     try:
-        return await asyncio.wait_for(pdftext.pages(doc["url"], max_pages=cap), timeout=90)
+        return await asyncio.wait_for(pdftext.pages(doc["url"], max_pages=cap), timeout=14)
     except asyncio.TimeoutError:
         return []
 

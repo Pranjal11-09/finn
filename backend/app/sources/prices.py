@@ -7,16 +7,14 @@ import json
 import math
 from datetime import datetime, timezone, timedelta
 
-import httpx
-
 from .. import config, db
-from ..http import client
+from . import refresh
 
 IST = timezone(timedelta(hours=5, minutes=30))
 TTL = 30 * 60
 
 
-async def history(symbol: str, exchange: str = "NS") -> dict | None:
+async def history(symbol: str, exchange: str = "NS", *, allow_background: bool = True) -> dict | None:
     """1y daily OHLCV. Cached 30 min; falls back to stale cache (or seed) if Yahoo is unreachable."""
     key = f"{symbol}.{exchange}"
     if config.FIXTURES:
@@ -25,6 +23,10 @@ async def history(symbol: str, exchange: str = "NS") -> dict | None:
     hit = db.kv_get("prices", key, TTL)
     if hit:
         return hit[0]
+    stale = db.kv_get_stale("prices", key)
+    if config.FAST_FEEDS and allow_background:
+        refresh.schedule(f"prices:{key}", lambda: history(symbol, exchange, allow_background=False))
+        return {**stale[0], "stale": True} if stale else None
     try:
         async with _download_lock:
             data = await asyncio.to_thread(_download, symbol, key)
@@ -33,7 +35,6 @@ async def history(symbol: str, exchange: str = "NS") -> dict | None:
             return data
     except Exception as exc:
         logging.getLogger(__name__).warning("Price fetch failed for %s: %s", key, type(exc).__name__)
-    stale = db.kv_get_stale("prices", key)
     return {**stale[0], "stale": True} if stale else None
 
 

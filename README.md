@@ -53,6 +53,8 @@ bash scripts/run.sh snapshot
 ```
 Snapshot requires successful preflight and may consume model quota. It creates data/seed.jsonl.gz. Inspect its contents and dates before committing it. Cached filings remain constrained to the selected time window.
 
+The hosted demo serves dated cached filings and prices while external feeds refresh. Asian Paints opens a dated research snapshot built from the original filings and call transcripts. **Refresh live** requests a fresh analysis. Follow-up questions on the snapshot use a smaller set of cited excerpts.
+
 ## Deploy
 1. Create a GitHub repository and push this folder, excluding .env, .venv and local databases.
 2. Create a Render Blueprint from render.yaml. Set the model key and any optional Telegram values in Render.

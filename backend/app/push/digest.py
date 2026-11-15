@@ -34,7 +34,12 @@ async def build(hours: int) -> dict:
     hs = holdings()
     by_sym = {h["symbol"]: h for h in hs}
     (items, status), eod = await asyncio.gather(announcements.for_portfolio(hs, hours), tape(s["volume_lookback"]))
-    await classify.classify_all(items)
+    try:
+        await asyncio.wait_for(classify.classify_all(items), timeout=4)
+    except TimeoutError:
+        for item in items:
+            if "category" not in item:
+                item.update(category="unclassified", subtype="unknown", classified_by="fallback")
     scope = db.reviewer.get()
     if scope:
         triage = (db.kv_get("reviewer_triage", scope) or ({}, 0))[0]

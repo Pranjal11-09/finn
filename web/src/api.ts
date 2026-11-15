@@ -55,7 +55,7 @@ export const api = {
   saveSettings: (p: Partial<Settings>) => j<Settings>(post('/api/settings', p)),
   portfolio: () => j<{ holdings: { symbol: string; name: string; sector: string; band: string }[]; research_demo: string[] }>(fetch('/api/portfolio')),
   search: (q: string) => j<{ symbol: string; name: string }[]>(fetch(`/api/search?q=${encodeURIComponent(q)}`)),
-  ask: (symbol: string, q: string) => j<{ answer: string; confidence?: string; cites: { sid: string; page: number; title: string }[] }>(post(`/api/research/${symbol}/ask`, { q })),
+  ask: (symbol: string, q: string, saved = false) => j<{ answer: string; confidence?: string; cites: { sid: string; page: number; title: string }[] }>(post(`/api/research/${encodeURIComponent(symbol)}/ask`, { q, saved })),
   usage: () => j<{ models: { tier: string; model: string; calls: number; in_tokens: number; out_tokens: number; cache_hits: number }[]
     classifier: { rules: number; llm: number }; cheap: string; strong: string; llm_ready: boolean; provider: string }>(fetch('/api/usage')),
 }

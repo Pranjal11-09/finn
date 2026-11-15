@@ -13,7 +13,7 @@ import asyncio
 import json
 from typing import AsyncIterator
 
-from .. import db, llm
+from .. import config, db, llm
 from ..sources import screener
 from . import docs as D
 from . import metrics as M
@@ -133,8 +133,15 @@ def _ledger_text(gs: list[dict]) -> str:
     return "\n".join(lines)
 
 
-async def stream(symbol: str) -> AsyncIterator[str]:
+async def stream(symbol: str, *, live: bool = False) -> AsyncIterator[str]:
     symbol = symbol.upper().strip()
+    saved = db.kv_get("demo_dossier_v1", symbol) if config.FAST_FEEDS and not live else None
+    if saved:
+        yield _ev("snapshot", captured_at=saved[0]["created_at"])
+        for event in saved[0]["events"]:
+            yield json.dumps(event)
+        yield _ev("status", stage="done", text="Saved research ready")
+        return
     yield _ev("status", stage="fundamentals", text=f"Pulling {symbol} filings & financials")
     sc = await screener.company(symbol)
     if not sc or not sc["quarters"]["periods"]:

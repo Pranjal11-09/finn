@@ -9,6 +9,7 @@ import httpx
 
 from .. import config, db
 from ..http import client, nse_client
+from . import refresh
 
 IST = timezone(timedelta(hours=5, minutes=30))
 TTL = 10 * 60
@@ -69,7 +70,7 @@ async def _bse(symbol: str, scrip: str, start: datetime, end: datetime) -> list[
     return [_norm_bse(x, symbol) for x in r.json().get("Table", [])]
 
 
-async def for_symbol(symbol: str, bse_code: str | None, hours: int) -> tuple[list[dict], str]:
+async def for_symbol(symbol: str, bse_code: str | None, hours: int, *, allow_background: bool = True) -> tuple[list[dict], str]:
     """Returns (announcements, status) where status is live|cache|stale|error."""
     end = datetime.now(IST)
     start = end - timedelta(hours=hours)
@@ -83,14 +84,22 @@ async def for_symbol(symbol: str, bse_code: str | None, hours: int) -> tuple[lis
     hit = db.kv_get("ann", key, TTL)
     if hit:
         return _window(hit[0], start), "cache"
+    stale = db.kv_get_stale("ann", key)
+    if config.FAST_FEEDS and allow_background:
+        refresh.schedule(f"ann:{key}", lambda: for_symbol(symbol, bse_code, hours, allow_background=False))
+        if stale is None:
+            alternatives = [db.kv_get_stale("ann", f"{symbol}:{window}") for window in (1, 3, 7, 30) if days != window]
+            stale = min((entry for entry in alternatives if entry is not None),
+                        key=lambda entry: entry[1], default=None)
+        return (_window(stale[0], start), "stale") if stale else ([], "refreshing")
     rows: list[dict] | None = None
     try:
-        rows = await _nse(symbol, end - timedelta(days=days), end)
-    except (httpx.HTTPError, ValueError):
+        rows = await asyncio.wait_for(_nse(symbol, end - timedelta(days=days), end), timeout=8)
+    except (TimeoutError, httpx.HTTPError, ValueError):
         if bse_code:
             try:
-                rows = await _bse(symbol, bse_code, end - timedelta(days=days), end)
-            except (httpx.HTTPError, ValueError):
+                rows = await asyncio.wait_for(_bse(symbol, bse_code, end - timedelta(days=days), end), timeout=6)
+            except (TimeoutError, httpx.HTTPError, ValueError):
                 rows = None
     if rows is None:
         stale = db.kv_get_stale("ann", key)
