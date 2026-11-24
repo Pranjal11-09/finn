@@ -1,5 +1,7 @@
 # Free scheduler: hits the deployed app so alerts fire even when nobody has it open.
-# Set repo secrets FINN_URL (e.g. https://finn.onrender.com) and CRON_TOKEN.
+# Needs repo secrets (Settings > Secrets and variables > Actions):
+#   FINN_URL   = https://finn-1ffu.onrender.com      (no trailing slash)
+#   CRON_TOKEN = the CRON_TOKEN value from Render > finn > Environment
 name: finn-scan
 on:
   schedule:
@@ -9,5 +11,21 @@ on:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      FINN_URL: ${{ secrets.FINN_URL }}
+      CRON_TOKEN: ${{ secrets.CRON_TOKEN }}
     steps:
-      - run: curl -fsS --max-time 170 "${{ secrets.FINN_URL }}/api/cron/scan?token=${{ secrets.CRON_TOKEN }}"
+      - name: Check secrets
+        run: |
+          [ -n "$FINN_URL" ]   || { echo "::error::Secret FINN_URL is not set (Settings > Secrets and variables > Actions)"; exit 1; }
+          [ -n "$CRON_TOKEN" ] || { echo "::error::Secret CRON_TOKEN is not set (copy it from Render > finn > Environment)"; exit 1; }
+      - name: Wake the server (Render free tier sleeps after 15 min idle)
+        run: curl -sS -o /dev/null --max-time 90 --retry 3 --retry-delay 15 --retry-all-errors "${FINN_URL%/}/api/health"
+      - name: Scan filings and EOD prices
+        run: |
+          code=$(curl -sS -o out.json -w "%{http_code}" --max-time 170 --retry 2 --retry-delay 20 \
+                 "${FINN_URL%/}/api/cron/scan?token=${CRON_TOKEN}")
+          cat out.json; echo
+          [ "$code" = "403" ] && { echo "::error::Token rejected: CRON_TOKEN in GitHub doesn't match the one on Render"; exit 1; }
+          [ "$code" = "200" ] || { echo "::error::Scan returned HTTP $code"; exit 1; }
