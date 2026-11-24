@@ -22,8 +22,11 @@ spikes = {"DIXON": (3.4, 6.2), "KAYNES": (2.6, -5.1), "CDSL": (1.4, 4.4), "HAL":
 for h in PORT:
     px = random.uniform(300, 5000)
     rows = []
+    # end on the last *final* daily bar: eod_stats ignores today's bar before 17:00 IST,
+    # so a spike planted on an unfinished bar would vanish and the tests would depend on the clock
+    last_final = now if now.hour >= 17 else now - timedelta(days=1)
     d = now - timedelta(days=380)
-    while d <= now:
+    while d <= last_final:
         if d.weekday() < 5:
             px *= math.exp(random.gauss(0.0004, 0.016))
             rows.append({"d": d.strftime("%Y-%m-%d"), "o": px, "h": px * 1.01, "l": px * 0.99, "c": round(px, 2),
